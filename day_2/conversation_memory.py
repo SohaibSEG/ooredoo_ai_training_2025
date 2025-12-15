@@ -1,10 +1,12 @@
+from pathlib import Path
 from dotenv import load_dotenv
 import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
+
+from file_message_chat_history import FileChatMessageHistory
 
 load_dotenv()
 
@@ -29,9 +31,10 @@ chain = prompt | llm
 
 memory_store = {}
 
-def get_message_history(session_id: str) -> InMemoryChatMessageHistory:
+def get_message_history(session_id: str) -> FileChatMessageHistory:
+    file_path = Path.cwd() / f"{session_id}_chat_history.json"
     if session_id not in memory_store:
-        memory_store[session_id] = InMemoryChatMessageHistory()
+        memory_store[session_id] = FileChatMessageHistory(file_path=str(file_path))
     return memory_store[session_id]
 
 chat = RunnableWithMessageHistory(
