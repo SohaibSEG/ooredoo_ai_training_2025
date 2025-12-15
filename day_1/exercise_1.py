@@ -11,5 +11,4 @@ response = client.models.generate_content(
     contents="Write a short poem about the beauty of nature.",
 )
 
-
 print(response.text)
