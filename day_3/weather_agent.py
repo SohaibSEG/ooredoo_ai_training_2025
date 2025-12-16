@@ -8,6 +8,7 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
+from uuid_utils import uuid7
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -83,7 +84,7 @@ def extract_clean_text(result: dict) -> str:
     return str(final_message_content)
 
 if __name__ == "__main__":
-    SESSION_ID = "bootcamp-user-1" 
+    SESSION_ID = str(uuid7())
     
     print("=" * 60)
     print("Weather & Clothing Agent")
