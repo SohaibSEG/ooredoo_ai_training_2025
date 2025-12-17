@@ -105,6 +105,14 @@ celerybeat.pid
 .env
 .env.*
 .venv
+.DS_Store
+
+# Local vector stores / data caches
+day_4/chroma_store/
+day_4/chroma_store/**
+
+# Ephemeral chat history artifacts
+*_chat_history.json
 
 # Spyder project settings
 .spyderproject
