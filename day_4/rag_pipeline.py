@@ -1,9 +1,7 @@
 """Shared RAG pipeline utilities and ingestion CLI for LangChain vector stores."""
-from __future__ import annotations
 
 import argparse
 import os
-from operator import itemgetter
 from pathlib import Path
 from typing import Iterable, List, Literal, Optional, Sequence
 from urllib.parse import quote_plus
@@ -13,10 +11,6 @@ from dotenv import load_dotenv
 from dataclasses import dataclass
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnableLambda
 from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import (
@@ -113,7 +107,10 @@ def chunk_documents(
 
 
 def format_documents(docs: Sequence[Document]) -> str:
-    return "\n\n---\n\n".join(doc.page_content for doc in docs)
+    formatted = []
+    for idx, doc in enumerate(docs, start=1):
+        formatted.append(f"[{idx}] {doc.page_content.strip()}")
+    return "\n\n".join(formatted)
 
 
 def ingest_pdfs(
@@ -131,62 +128,6 @@ def ingest_pdfs(
     chunks = chunk_documents(documents, chunk_size, chunk_overlap)
     vector_store.add_documents(chunks)
     return len(chunks)
-
-
-def build_chat_chain(vector_store: VectorStore):
-    retriever = vector_store.as_retriever(search_kwargs={"k": 4})
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "You are a helpful assistant that answers with grounded information. "
-                "Use this context to answer the user's question:\n{context}\n"
-                "If the answer cannot be found in the context, say you don't know.",
-            ),
-            MessagesPlaceholder("history"),
-            ("human", "{question}"),
-        ]
-    )
-
-    llm = build_llm()
-    rag_chain = (
-        {
-            "context": itemgetter("question")
-            | retriever
-            | RunnableLambda(format_documents),
-            "question": itemgetter("question"),
-            "history": itemgetter("history"),
-        }
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
-    return rag_chain
-
-
-def interactive_chat(vector_store: VectorStore, target_label: Optional[str] = None) -> None:
-    rag_chain = build_chat_chain(vector_store)
-    history: List[BaseMessage] = []
-    label = target_label or "the loaded collection"
-    print(f"Chatting with {label}")
-    print("Type 'exit' to quit.\n")
-    while True:
-        user_input = input("You: ").strip()
-        if not user_input:
-            continue
-        if user_input.lower() in {"exit", "quit"}:
-            print("Goodbye!")
-            break
-        response = rag_chain.invoke(
-            {
-                "question": user_input,
-                "history": history,
-            }
-        )
-        print(f"Assistant: {response}\n")
-        history.extend([HumanMessage(content=user_input), AIMessage(content=response)])
-
 
 def parse_args() -> IngestArgs:
     parser = argparse.ArgumentParser(description="Ingest PDFs into pgvector or Chroma stores")

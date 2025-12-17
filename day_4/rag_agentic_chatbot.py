@@ -16,6 +16,7 @@ from rag_pipeline import (
     build_embeddings,
     build_llm,
     resolve_pg_connection_string,
+    format_documents,
 )
 
 DEFAULT_CHROMA_DIR = Path(__file__).resolve().parent / "chroma_store"
@@ -77,11 +78,8 @@ def create_retrieval_tool(retriever : VectorStoreRetriever):
         documents = retriever.invoke(query)
         if not documents:
             return "No relevant passages found in the PDFs."
-        formatted = []
-        for idx, doc in enumerate(documents, start=1):
-            formatted.append(f"[{idx}] {doc.page_content.strip()}")
-        return "\n\n".join(formatted)
 
+        return format_documents(documents)
     return pdf_search
 
 
