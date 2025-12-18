@@ -1,0 +1,15 @@
+python-dotenv
+google-genai
+langchain
+langchain-google-genai
+langchain-community
+langchain-text-splitters
+pypdf
+pgvector
+chromadb
+langchain-chroma
+langchain-postgres
+psycopg[binary]
+pydantic
+fastapi
+uvicorn[standard]
