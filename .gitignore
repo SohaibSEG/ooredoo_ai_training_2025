@@ -105,6 +105,14 @@ celerybeat.pid
 .env
 .env.*
 .venv
+.python-version
+
+# Nested project environments
+**/.venv/
+**/venv/
+**/env/
+**/.env
+**/.env.*
 .DS_Store
 
 # Local vector stores / data caches
